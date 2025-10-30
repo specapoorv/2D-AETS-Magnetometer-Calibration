@@ -14,9 +14,10 @@ sensors_data = sl.SensorsData()
 mag_data = sl.SensorsData.MagnetometerData()
 
 # Open CSV file
-with open("data.csv", "w", newline="") as csvfile:
+time = time.time()
+with open(f"data_{time}.csv", "w", newline="") as csvfile:
     writer = csv.writer(csvfile)
-    writer.writerow(["x", "y", "z"])  # header row
+    writer.writerow(["x", "y"])  # header row
 
     print("Collecting magnetometer data... Rotate the rover slowly 360° a few times.")
     start = time.time()
@@ -26,8 +27,8 @@ with open("data.csv", "w", newline="") as csvfile:
             mag_data = sensors_data.get_magnetometer_data()
 
             # Get uncalibrated magnetic field (3D vector)
-            field = mag_data.get_magnetic_field_uncalibrated()
-            writer.writerow([field.get()[0], field.get()[1], field.get()[2]])
+            mx, my = mag_data.get_magnetic_field_uncalibrated()
+            writer.writerow([mx, my])
 
         time.sleep(0.05)  # small delay to reduce load
 
