@@ -34,7 +34,7 @@ def compute_heading(mx_corr, my_corr):
 # === ZED Initialization ===
 zed = sl.Camera()
 init_params = sl.InitParameters()
-init_params.coordinate_units = sl.UNIT.MILLIGAUSS
+init_params.coordinate_units = sl.UNIT.METER
 status = zed.open(init_params)
 
 if status != sl.ERROR_CODE.SUCCESS:

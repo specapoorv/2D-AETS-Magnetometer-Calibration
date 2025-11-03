@@ -4,7 +4,7 @@ import time
 
 zed = sl.Camera()
 init_params = sl.InitParameters()
-init_params.coordinate_units = sl.UNIT.MILLIGAUSS  # or sl.UNIT.GAUSS / TESLA depending on what you prefer
+init_params.coordinate_units = sl.UNIT.METER  # or sl.UNIT.GAUSS / TESLA depending on what you prefer
 status = zed.open(init_params)
 if status != sl.ERROR_CODE.SUCCESS:
     print("ZED open failed:", repr(status))
