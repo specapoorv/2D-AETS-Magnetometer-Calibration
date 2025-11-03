@@ -52,6 +52,7 @@ def get_parameters(a, b, c, d, e, f, B_h):
     rho = np.arcsin(np.abs(x2) / 2 * (np.sqrt(x1)))
     # calculating like this was giving some error so did this instead
     # rho = 0.5*np.arctan2(b, a-c)
+    # rho = -0.1
 
     # Common numerator
     numerator = 2 * np.sqrt((np.abs(x1 * ((x5 * x2**2) - (x2 * x3 * x4 )+ (x3**2) + (x1 * x2 * x4**2) - 4 * (x1 * x5)))))
@@ -74,7 +75,7 @@ def calibrate(x, y, bx, by, rho, s_x, s_y):
     
     data_raw = np.vstack((x, y)) - np.array([[bx], [by]])
     scale_mat = np.diag([1/s_x, 1/s_y])
-    data_corr =   scale_mat @ R @ data_raw
+    data_corr = R @ scale_mat @ data_raw
 
     x_corr, y_corr = data_corr[0], data_corr[1]
 
@@ -104,31 +105,52 @@ def plot_ellipse(a, b, c, d, e, f, x_data=None, y_data=None):
     plt.xlabel("x")
     plt.ylabel("y")
     plt.show()
+    
 
-
-
-def plotter(x, y, x_corr, y_corr):
+def plotter(x, y, x_corr, y_corr, step=100):
     """
-    Plot raw (x, y) and corrected (x_corr, y_corr) magnetometer data.
+    Plot raw (x, y) and corrected (x_corr, y_corr) magnetometer data,
+    with arrows showing how each point moves after calibration.
+    
+    step: plot every nth arrow to avoid clutter
     """
     plt.figure(figsize=(6, 6))
-    plt.scatter(x, y, color='r', s=5, label='Raw data')
-    plt.scatter(x_corr, y_corr, color='g', s=5, label='Corrected data')
+    
+    # Raw and corrected points
+    plt.scatter(x, y, color='r', s=10, label='Raw data')
+    plt.scatter(x_corr, y_corr, color='g', s=10, label='Corrected data')
+
+    plt.scatter(x_corr, y_corr, s=5, label='Corrected data')
+    circle = plt.Circle((0, 0), 1, color='r', fill=False, linestyle='--')
+    plt.gca().add_artist(circle)
+
+
+    # Draw arrows from raw → corrected
+    for i in range(0, len(x), step):
+        plt.arrow(x[i], y[i],
+                  x_corr[i] - x[i],
+                  y_corr[i] - y[i],
+                  color='blue',
+                  alpha=0.5,
+                  width=0.005,
+                  head_width=0.05,
+                  length_includes_head=True)
+    
     plt.axis('equal')
     plt.legend()
-    plt.title('Magnetometer Calibration: Raw vs Corrected')
-    plt.xlabel('X')
-    plt.ylabel('Y')
+    plt.title('Magnetometer Calibration: Raw → Corrected Movement')
+    plt.xlabel('X (µT)')
+    plt.ylabel('Y (µT)')
     plt.grid(True)
     plt.show()
 
 
 def main():
-    x, y = get_data("/home/specapoorv/magnetometer_calibration/mag_data.csv")
+    x, y = get_data("/home/specapoorv/2D-AETS-Magnetometer-Calibration/mag_data_2.csv")
     #x and y is vector
     a, b, c, d, e, f = fit_ellipse(x, y)
     plot_ellipse(a, b, c, d, e, f, x, y)
-    b_x, b_y, rho, s_x, s_y = get_parameters(a, b, c, d, e, f, B_h=3.0)
+    b_x, b_y, rho, s_x, s_y = get_parameters(a, b, c, d, e, f, B_h=2.0)
     print(f"offsets = ({b_x}, {b_y})")
     print(f"rho = {rho}")
     print(f"scaling factors = {s_x}, {s_y}")

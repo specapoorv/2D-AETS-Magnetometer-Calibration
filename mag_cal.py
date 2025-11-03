@@ -52,7 +52,7 @@ def load_and_filter_csv(file_path, outlier_percentile=0.05):
 
 
 def main():
-    df = load_and_filter_csv("data.csv", outlier_percentage)
+    df = load_and_filter_csv("/home/specapoorv/2D-AETS-Magnetometer-Calibration/mag_data_2.csv", outlier_percentage)
     print(f"Samples considered: {len(df)}, Noise removed percentage: {outlier_percentage}")
 
     offset_x, offset_y, df_offset = apply_offset_correction(df)
