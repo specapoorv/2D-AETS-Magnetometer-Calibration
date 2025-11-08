@@ -31,6 +31,24 @@ def fit_ellipse(x, y):
     print(beta)
     return a, b, c, d, e, f
 
+# https://scipython.com/book/chapter-8-scipy/examples/fitting-an-ellipse-to-data/
+# def fit_ellipse(x, y):
+#     x = x[:, np.newaxis]
+#     y = y[:, np.newaxis]
+#     D = np.hstack([x*x, x*y, y*y, x, y, np.ones_like(x)])
+#     S = np.dot(D.T, D)
+#     C = np.zeros([6,6])
+#     C[0,2] = C[2,0] = 2
+#     C[1,1] = -1
+#     # solve generalized eigenvalue problem1
+#     import scipy.linalg
+#     eigvals, eigvecs = scipy.linalg.eig(S, C)
+#     # choose positive eigenvalue
+#     cond = np.logical_and(np.isreal(eigvals), eigvals > 0)
+#     a = np.real(eigvecs[:, cond][:,0])
+#     return a  # [A,B,C,D,E,F]
+
+
 def get_parameters(a, b, c, d, e, f, B_h):
 
     x1 = a/c
@@ -53,7 +71,8 @@ def get_parameters(a, b, c, d, e, f, B_h):
     # calculating like this was giving some error so did this instead
     # rho = 0.5*np.arctan2(b, a-c)
     # rho = -0.1
-
+    # rho = 0.0
+    # rho = rho + 3.1457/2
     # Common numerator
     numerator = 2 * np.sqrt((np.abs(x1 * ((x5 * x2**2) - (x2 * x3 * x4 )+ (x3**2) + (x1 * x2 * x4**2) - 4 * (x1 * x5)))))
 
@@ -66,16 +85,17 @@ def get_parameters(a, b, c, d, e, f, B_h):
 
     #B_h is local horizontal magnetic field we can take the local field from a geomagnetic model
     #right now i am taking it to be 40 micro tesla for IITM, now taking it 3.0 idk why
+    #B_h actually doesnt matter its just for scaling properly but for headings it wont give incorrect value 
 
     return bx, by, rho, s_x, s_y
 
 def calibrate(x, y, bx, by, rho, s_x, s_y):
-    R = np.array([[np.cos(-rho), np.sin(-rho)],
-              [-np.sin(-rho),  np.cos(-rho)]])
+    R = np.array([[np.cos(rho), np.sin(rho)],
+              [-np.sin(rho),  np.cos(rho)]])
     
     data_raw = np.vstack((x, y)) - np.array([[bx], [by]])
     scale_mat = np.diag([1/s_x, 1/s_y])
-    data_corr = R @ scale_mat @ data_raw
+    data_corr = R @ (scale_mat @ data_raw)
 
     x_corr, y_corr = data_corr[0], data_corr[1]
 
@@ -146,7 +166,7 @@ def plotter(x, y, x_corr, y_corr, step=100):
 
 
 def main():
-    x, y = get_data("/home/specapoorv/2D-AETS-Magnetometer-Calibration/mag_data_2.csv")
+    x, y = get_data("mag_data_2.csv")
     #x and y is vector
     a, b, c, d, e, f = fit_ellipse(x, y)
     plot_ellipse(a, b, c, d, e, f, x, y)
